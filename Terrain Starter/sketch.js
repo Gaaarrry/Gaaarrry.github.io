@@ -57,7 +57,10 @@ function generateTerrain(){
   drawflag(peakX,peakY);//use peakX and peakY to put the flag on the top of the highest peak
   averageHeight(allHeight/allRect);//the resault will be the average height
 }
+
+
 function drawflag(x,y){
+  //renders a flag object at a given x.y coordinate
   fill(255);
   line(x,y,x,y-20);
   fill(225,0,0);
@@ -68,6 +71,7 @@ function drawflag(x,y){
 
 
 function averageHeight(yValue){
+
   fill(255,0,0);
   rect(0,yValue,width, 5);//starts at 0, yValue(the average height)
                           //screen's width, and height   5

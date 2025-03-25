@@ -13,6 +13,7 @@ function setup() {
 function draw() {
   background(220);
   drawRoad();
+  
 }
 
 function drawRoad(){
@@ -24,4 +25,30 @@ function drawRoad(){
     
     rect(i,height/2,rectwidth-15,3);
   }
+}
+
+class vehicle{
+  constructor(car, color, x, y, dire, xSpeed){
+    this.car = car; this.color = color; this.x = x; this.y = y; this.dire = dire; this.xSpeed = xSpeed;
+    
+  }
+  display(){
+    fill(this.color);
+    if(this.car === 0){
+      rect(this.x, this.y, 30, 20);
+    }
+    else{
+      rect(this.x, this.y, 60,20);
+    }
+  }
+  move(){
+    this.x += this.xSpeed;
+    if(this.x > width){
+      x = 0;
+    }
+    if(this.x < 0){
+      x = width;
+    }
+  }
+
 }
