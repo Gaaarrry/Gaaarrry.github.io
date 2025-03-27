@@ -4,10 +4,12 @@
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
-
+let eastbound = [];
+let westbound = []; 
 let rectwidth = 45;
-function setup() {
+function setup() {    
   createCanvas(windowWidth, windowHeight);
+  for(let i = 0; i< 20; i++){}
 }
 
 function draw() {
@@ -27,7 +29,7 @@ function drawRoad(){
   }
 }
 
-class vehicle{
+class car{
   constructor(car, color, x, y, dire, xSpeed){
     this.car = car; this.color = color; this.x = x; this.y = y; this.dire = dire; this.xSpeed = xSpeed;
     
@@ -50,5 +52,13 @@ class vehicle{
       x = width;
     }
   }
-
+  speedUp(){
+    if(this.dire === 1 && this.xSpeed < 15){
+      this.xSpeed += 0.5;
+    }
+    if(this.dire === 1 && this.xSpeed >-15){
+      this.xSpeed -= 0.5;
+    }
+    
+  }
 }
