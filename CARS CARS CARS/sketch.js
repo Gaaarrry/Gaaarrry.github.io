@@ -61,4 +61,6 @@ class car{
     }
     
   }
+  speedDown(){
+  }
 }
