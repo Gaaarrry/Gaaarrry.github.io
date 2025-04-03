@@ -4,9 +4,9 @@
 //Working with 2d Arrays, Visualizations
 
 let grid =
-[ [0, 60, 120, 180, 240],
-  [240, 180, 120, 60, 0],
-  [0, 200, 0, 200, 0]
+[ [0, 0, 255, 255, 0],
+  [255, 255, 0, 255, 0],
+  [0, 0, 0, 255, 0]
 ];
 
 let squareSize = 60;
@@ -52,11 +52,27 @@ function renderGrid(){
   }
 }
 
+function mousePressed(){
+
+  let x = getCurrentX();
+  let y = getCurrentY();
+
+  //always:flip the "current" tile
+  flip(x,y);
+
+  if(y>0) flip(x,y-1); //North
+  if(x >0) flip(x-1,y);
+  if(x<NUMS_ROWS-1) flip(x+1, y);
+  if(y < NUM_COLS-1) flip(x,y+1);
+}
+
+function flip(x,y){
+  //take a tile and invert its value
+  if(grid[y][x] === 0) grid[y][x] = 255;
+  else grid[y][x] = 0;
+}
 function draw() {
   background(220);
   renderGrid();
-  checkForMouse();
-  //temperary helper
-  fill(255,0,0);
-  text(floor(mouseX/squareSize), mouseX, mouseY);
+
 }
