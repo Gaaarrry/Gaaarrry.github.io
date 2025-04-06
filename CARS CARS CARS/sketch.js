@@ -1,16 +1,7 @@
 // Project Title
 // Your Name
 // Date
-//
-// Extra for Experts:
-// - describe what you did to take this project "above and beyond"
-// let eastbound = [];
-// let westbound = []; 
-// let rectwidth = 45;
-// function setup() {    
-//   createCanvas(windowWidth, windowHeight);
-//   for(let i = 0; i< 20; i++){}
-// }
+
 let eastbound = [];
 let westbound = [];
 let rectwidth = 35;
