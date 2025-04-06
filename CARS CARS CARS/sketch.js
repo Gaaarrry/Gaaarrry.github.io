@@ -118,7 +118,7 @@ class Vehicle{
     }
     
   }
-<<<<<<< HEAD
+
   speedDown() {
     if (this.direction === 1 && this.xSpeed >= 0) {
       this.xSpeed -= 0.5;
@@ -149,13 +149,10 @@ class Vehicle{
       this.changeColor();
     }
     this.display();
-=======
-  speedDown(){
->>>>>>> 8e62984435b072046ea172dc21d4ea6b42bd1923
   }
 }
-class TrafficLight {
-  constructor() {
-    this.isRed = false; 
+  class TrafficLight {
+    constructor() {
+      this.isRed = false; 
+    }
   }
-}
