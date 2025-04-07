@@ -94,7 +94,7 @@ class Vehicle{
       this.x = width;
     }
   }
-  speedUp(){
+  speedUp(){print(this.xSpeed);
     if(this.dire === 1 && this.xSpeed <= 15){
       this.xSpeed += 0.5;
       if (this.xSpeed >= 15){
@@ -111,18 +111,19 @@ class Vehicle{
   }
 
   speedDown() {
-    if (this.direction === 1 && this.xSpeed >= 0) {
+    if (this.dire === 1 && this.xSpeed >= 0) {
       this.xSpeed -= 0.5;
       if (this.xSpeed <= 0) {
         this.xSpeed = 0;
       }
     }
-    if (this.direction === 0 && this.xSpeed <= 0) {
+    if (this.dire === 0 && this.xSpeed <= 0) {
       this.xSpeed += 0.5;
       if (this.xSpeed >= 0) {
         this.xSpeed = 0;
       }
     }
+    print(1,this.xSpeed);
   }
   changeColor() {
     this.col = color(random(255), random(255), random(255));
