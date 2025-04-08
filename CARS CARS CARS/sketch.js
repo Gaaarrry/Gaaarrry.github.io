@@ -133,7 +133,7 @@ class Vehicle{//create the vehicle class to draw the cars, move them, change the
     }
   }
   changeColor() {//random color for the cars
-    this.col = color(random(255), random(255), random(255));
+    this.color = color(random(255), random(255), random(255));
   }
 
   action() {//ACTION! let the cars move, change color, speed up and slow down
