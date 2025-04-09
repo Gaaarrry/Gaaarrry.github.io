@@ -29,9 +29,18 @@ function swap(x1,y1,x2,y2){
 
 function keyPressed(){
   //try a single action per keypress
-  if(keyCode === UP_ARROW){
-    swap(playerX, playerY,playerX, playerY - 1);
-    playerY--;
+  if(keyCode === UP_ARROW&&playerY>0){
+    //before doing anything else, inspect top neighbour
+    if(level[playerY - 1][playerX]===0){//grass
+      swap(playerX, playerY,playerX, playerY - 1);
+      playerY--;
+    }
+    else if(level[playerY-1][playerX] === 1){//chicken
+      if(playerY-2 >= 0 && le) {
+    
+      }
+    }
+    
   }
   else if(keyCode === DOWN_ARROW){
     swap(playerX, playerY,playerX, playerY + 1);
