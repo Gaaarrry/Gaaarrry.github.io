@@ -1,13 +1,12 @@
 //Insert your Comment Header here.
 
-let NUM_ROWS= 4;
+let NUM_ROWS= 3;
 let NUM_COLS = 5;
 let rectWidth, rectHeight;
 let currentRow, currentCol;
 let gridData = [[0,0,0,0,0],
                 [0,0,0,0,0],
-                [0,255,0,0,0],
-                [255,255,255,0,0]];
+                [0,255,0,0,0]];
 
 let fMode = "cross"; 
 
