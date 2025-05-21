@@ -12,7 +12,7 @@ function draw() {//to draw out the square that regulate by the functions
   background(0);
   randomSeed(1);
   let topDepth = int(map(mouseX, 0, width, 1, 5));
-  squareFractal(width/2, height/2, height/2, 0, topDepth);
+  squareFractal(0,0, height/2, 0, topDepth);
 }
 function squareFractal(x, y, sideL, depth, topDepth) {//to draw out the squares
                      //x and y are the center of the square, sideL is the length of the square, depth is the depth, and topDepth is the maximum depth
