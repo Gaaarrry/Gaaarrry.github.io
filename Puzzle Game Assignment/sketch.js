@@ -99,14 +99,14 @@ function highlight(){//hightlight different patterns use some green light
   let y = getCurrentY();
   fill(0, 255, 0, 70);
 
-  if(pattern === 3){
+  if(pattern === 3){//highlight "cross" pattern
     square(x * squareSize, y * squareSize, squareSize);//MIDDLE
     if(y > 0) square(x * squareSize, (y-1)*squareSize, squareSize);  //NORTH 
     if(x > 0) square((x-1)*squareSize, y*squareSize, squareSize);  //WEST
     if(x < NUM_COLS-1) square((x+1)*squareSize, y*squareSize, squareSize); //EAST
     if(y < NUM_ROWS-1) square(x * squareSize, (y+1)*squareSize, squareSize); //SOUTH
   }
-  if(pattern === 4){
+  if(pattern === 4){//highlight "square" pattern
     square(x * squareSize, y * squareSize, squareSize);//MIDDLE
     if(x < NUM_COLS-1) square((x+1) * squareSize, y*squareSize, squareSize); //EAST
     if(y < NUM_ROWS-1) square(x * squareSize, (y+1)*squareSize, squareSize); //SOUTH

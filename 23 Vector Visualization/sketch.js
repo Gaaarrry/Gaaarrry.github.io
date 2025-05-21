@@ -23,6 +23,9 @@ class Ball{
     this.grav = createVector(0,0);
   }
 
+  calMouse(){
+    //mouse vector calculation
+  }
   move(){
     this.vel.add(this.vel);
     this.grav.add(this.grav);
@@ -33,6 +36,7 @@ class Ball{
     circle(this.pos.x, this.pos.y,20);
 
     stroke(255,0,0);
-    line(this.pos.x,this.pos.y)
+    line(this.pos.x,this.pos.y);
+
   }
 }
