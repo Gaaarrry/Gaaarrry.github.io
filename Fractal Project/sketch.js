@@ -11,8 +11,13 @@ function setup() {//in order to set the rectangle's mode and make it run
 function draw() {//to draw out the square that regulate by the functions
   background(0);
   randomSeed(1);
+<<<<<<< HEAD
+  let topDepth = int(map(mouseX, 0, width, 1, 5));
+  squareFractal(0,0, height/2, 0, topDepth);
+=======
   let side = int(map(mouseX, 0, width, 1, 5));
   squareFractal(width/2, height/2, height/2, 0, side);
+>>>>>>> de8932e9a9dd40e28eca1515c3f07c26ff019255
 }
 function squareFractal(x, y, sideL, depth, side) {//to draw out the squares
                      //x and y are the center of the square, sideL is the length of the square, depth is the depth, and topDepth is the maximum depth
