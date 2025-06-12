@@ -6,9 +6,14 @@
 // - describe what you did to take this project "above and beyond"
 
 let rectWidth = 10;
-let currentScene = 0;
-let scene = 60
-
+let currentScene = 1;
+let scene = 60;
+let backgroundColor = [[0, 0, 40], [60, 100, 150], [135, 206, 250]];
+let curBg = backgroundColor[0];
+let colorDelay = 50;
+let redShift = (backgroundColor[1][0] - backgroundColor[0][0]) / colorDelay;
+let greenShift = (backgroundColor[1][1] - backgroundColor[0][1]) / colorDelay;
+let blueShift = (backgroundColor[1][2] - backgroundColor[0][2]) / colorDelay;
 function setup() {
   createCanvas(windowWidth, windowHeight);
 }
@@ -19,31 +24,45 @@ function draw() {
   generateTerrain();
 
 
- 
+
 }
-
-
 function drawBackground() {
-  currentScene = floor(frameCount / scene) % 6;
+  // currentScene = floor(frameCount / scene) % 6;
 
-  if (currentScene === 0) {
-    background(0, 0, 40);
+  // if (currentScene === 0) {
+  //   background(0, 0, 40);
+  // }
+  // else if (currentScene === 1) {
+  //   background(60, 100, 150);
+  // }
+  // else if (currentScene === 2) {
+  //   background(135, 206, 250);
+  // }
+  // else if (currentScene === 3) {
+  //   background(255, 165, 0);
+  // }
+  // else if (currentScene === 4) {
+  //   background(255, 100, 50);
+  // }
+  // else if (currentScene === 5) {
+  //   background(20, 20, 30);
+  // }
+  if (frameCount % colorDelay === 0) {
+    currentScene++;
+    if (currentScene > 2) {
+      currentScene = 0;
+    }
+    redShift = (backgroundColor[currentScene][0] - curBg[0]) / colorDelay;
+    greenShift = (backgroundColor[currentScene][1] - curBg[1]) / colorDelay;
+    blueShift = (backgroundColor[currentScene][2] - curBg[2]) / colorDelay;
+
   }
-  else if (currentScene === 1) {
-    background(60, 100, 150);
-  }
-  else if (currentScene === 2) {
-    background(135, 206, 250);
-  }
-  else if (currentScene === 3) {
-    background(255, 165, 0);
-  }
-  else if (currentScene === 4) {
-    background(255, 100, 50);
-  }
-  else if (currentScene === 5) {
-    background(20, 20, 30);
-  }
+
+
+  curBg[0] += redShift;
+  curBg[1] += greenShift;
+  curBg[2] += blueShift;
+  background(curBg[0], curBg[1], curBg[2]);
 
   // sun (responsive)
   noStroke();
@@ -90,7 +109,7 @@ function cloud(x, y) {
 
 
 
-function generateTerrain(){
+function generateTerrain() {
   let peak = frameCount * 0.01;
   let peakY = height;
   let peakX;
