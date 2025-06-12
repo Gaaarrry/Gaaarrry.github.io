@@ -6,7 +6,8 @@
 // - describe what you did to take this project "above and beyond"
 
 let rectWidth = 10;
-
+let currentScene = 0;
+let scene = 60
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -23,9 +24,26 @@ function draw() {
 
 
 function drawBackground() {
-  // sky
-  background(135, 206, 250);
+  currentScene = floor(frameCount / scene) % 6;
 
+  if (currentScene === 0) {
+    background(0, 0, 40);
+  }
+  else if (currentScene === 1) {
+    background(60, 100, 150);
+  }
+  else if (currentScene === 2) {
+    background(135, 206, 250);
+  }
+  else if (currentScene === 3) {
+    background(255, 165, 0);
+  }
+  else if (currentScene === 4) {
+    background(255, 100, 50);
+  }
+  else if (currentScene === 5) {
+    background(20, 20, 30);
+  }
 
   // sun (responsive)
   noStroke();
@@ -46,10 +64,10 @@ function drawBackground() {
 
   // clouds (fixed position, tight clusters)
   fill(255);
-  drawCloud(240, 80);
-  drawCloud(510, 60);
-  drawCloud(700, 100);
-  drawCloud(900, 75);
+  cloud(240, 80);
+  cloud(510, 60);
+  cloud(700, 100);
+  cloud(900, 75);
 
 
   // water
@@ -59,7 +77,7 @@ function drawBackground() {
 }
 
 
-function drawCloud(x, y) {
+function cloud(x, y) {
   circle(x, y, 40);
   circle(x + 25, y - 5, 42);
   circle(x + 50, y, 40);
@@ -97,64 +115,3 @@ function generateTerrain(){
 
 
 
-
-
-function generateTerrain(){
-  let peak = frameCount * 0.01;
-  let peakY = height;
-  let peakX;
-  let allHeight = 0;
-  let allRect = 0;
-  for (let x = 0; x <= width; x += rectWidth) {
-    let y = height / 3 + noise(peak) * (height / 50); // limit wave range within lake
-    peak += 0.01;
-    noStroke();
-    fill(0, 120, 200, 160);
-    rect(x, y, rectWidth, height - y);
-
-
-    allHeight += y;
-    allRect += 1;
-    if (y < peakY) {
-      peakY = y;
-      peakX = x;
-    }
-  }
-}
-
-
-function keyPressed() {
-  if (key === ' ') {
-    if (!isFired) {
-      isFired = true;
-      let dirX = mouseX - ball.x;
-      let dirY = mouseY - ball.y;
-      let mag = sqrt(dirX * dirX + dirY * dirY);
-      if (mag != 0) {
-        dirX /= mag;
-        dirY /= mag;
-      }
-      fishWire.x = ball.x + dirX * fishWireLength;
-      fishWire.y = ball.y + dirY * fishWireLength;
-      fishWire.vx = dirX * 10;
-      fishWire.vy = dirY * 10;
-    }
-  }
-  if (key === 'p') {
-    vis = vis === 0 ? 1 : 0;
-  }
-}
-
-
-class shop {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-    this.s = 1000;
-  }
-  display() {
-    if (vis === 1) {
-      square(this.x, this.y, this.s);
-    }
-  }
-}
