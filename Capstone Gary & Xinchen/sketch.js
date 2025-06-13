@@ -6,16 +6,62 @@
 // - describe what you did to take this project "above and beyond"
 
 let rectWidth = 10;
-let currentScene = 1;
+let currentScene = 6;
+let clouds = [];
 let scene = 60;
-let backgroundColor = [[0, 0, 40], [60, 100, 150], [135, 206, 250]];
+let backgroundColor = [[0, 0, 40], [60, 100, 150], [135, 206, 250], [255, 165, 0], [255, 100, 50], [20, 20, 30]];
+let mountainTargets = [
+  [20, 30, 30],    // 深夜：深灰绿
+  [60, 90, 80],    // 清晨：暗绿色
+  [90, 150, 120],  // 上午：中绿
+  [120, 180, 140], // 中午：亮绿
+  [100, 130, 120], // 傍晚：暗一点
+  [15, 20, 20]     // 午夜：极暗
+];
+
+
+let waterTargets = [
+  [0, 20, 40],     // 深夜：蓝黑
+  [30, 80, 130],   // 清晨：冷蓝
+  [50, 150, 200],  // 上午：清澈蓝
+  [70, 180, 255],  // 中午：亮蓝
+  [50, 130, 180],  // 傍晚：带一点橘光
+  [0, 15, 30]      // 午夜：深蓝
+];
+
+
+let cloudTargets = [
+  [80, 80, 100],   // 深夜：暗灰蓝
+  [180, 180, 220], // 清晨：淡灰白
+  [255, 255, 255], // 上午：纯白
+  [255, 240, 200], // 中午：日光偏橘
+  [220, 200, 200], // 傍晚：微红云
+  [100, 100, 120]  // 午夜：低亮灰
+];
+
 let curBg = backgroundColor[0];
-let colorDelay = 50;
+let curMountain = mountainTargets[0];
+let curWater = waterTargets[0];
+let curCloud = cloudTargets[0];
+let colorDelay = 600;
 let redShift = (backgroundColor[1][0] - backgroundColor[0][0]) / colorDelay;
 let greenShift = (backgroundColor[1][1] - backgroundColor[0][1]) / colorDelay;
 let blueShift = (backgroundColor[1][2] - backgroundColor[0][2]) / colorDelay;
+let redMountainShift = (mountainTargets[1][0] - mountainTargets[0][0]) / colorDelay;
+let greenMountainShift = (mountainTargets[1][1] - mountainTargets[0][1]) / colorDelay;
+let blueMountainShift = (mountainTargets[1][2] - mountainTargets[0][2]) / colorDelay;
+let redWaterShift = (waterTargets[1][0] - waterTargets[0][0]) / colorDelay;
+let greenWaterShift = (waterTargets[1][1] - waterTargets[0][1]) / colorDelay;
+let blueWaterShift = (waterTargets[1][2] - waterTargets[0][2]) / colorDelay;
+let redCloudShift = (cloudTargets[1][0] - cloudTargets[0][0]) / colorDelay;
+let greenCloudShift = (cloudTargets[1][1] - cloudTargets[0][1]) / colorDelay;
+let blueCloudShift = (cloudTargets[1][2] - cloudTargets[0][2]) / colorDelay;
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  clouds = [{ x: 100, y: random(height / 10, height / 3 - 40) },
+  { x: 500, y: random(height / 10, height / 3 - 40) },
+  { x: 830, y: random(height / 10, height / 3 - 40) },
+  { x: 1100, y: random(height / 10, height / 3 - 40) }]
 }
 
 
@@ -49,12 +95,21 @@ function drawBackground() {
   // }
   if (frameCount % colorDelay === 0) {
     currentScene++;
-    if (currentScene > 2) {
+    if (currentScene > 5) {
       currentScene = 0;
     }
     redShift = (backgroundColor[currentScene][0] - curBg[0]) / colorDelay;
     greenShift = (backgroundColor[currentScene][1] - curBg[1]) / colorDelay;
     blueShift = (backgroundColor[currentScene][2] - curBg[2]) / colorDelay;
+    redMountainShift = (mountainTargets[currentScene][0] - curMountain[0]) / colorDelay;
+    greenMountainShift = (mountainTargets[currentScene][1] - curMountain[1]) / colorDelay;
+    blueMountainShift = (mountainTargets[currentScene][2] - curMountain[2]) / colorDelay;
+    redWaterShift = (waterTargets[currentScene][0] - curWater[0]) / colorDelay;
+    greenWaterShift = (waterTargets[currentScene][1] - curWater[1]) / colorDelay;
+    blueWaterShift = (waterTargets[currentScene][2] - curWater[2]) / colorDelay;
+    redCloudShift = (cloudTargets[currentScene][0] - curCloud[0]) / colorDelay;
+    greenCloudShift = (cloudTargets[currentScene][1] - curCloud[1]) / colorDelay;
+    blueCloudShift = (cloudTargets[currentScene][2] - curCloud[2]) / colorDelay;
 
   }
 
@@ -62,7 +117,18 @@ function drawBackground() {
   curBg[0] += redShift;
   curBg[1] += greenShift;
   curBg[2] += blueShift;
+
+
+
+  curWater[0] += redWaterShift;
+  curWater[1] += greenWaterShift;
+  curWater[2] += blueWaterShift;
+
+  curCloud[0] += redCloudShift;
+  curCloud[1] += greenCloudShift;
+  curCloud[2] += blueCloudShift;
   background(curBg[0], curBg[1], curBg[2]);
+
 
   // sun (responsive)
   noStroke();
@@ -71,32 +137,44 @@ function drawBackground() {
 
 
   // mountains (3–5, responsive and evenly spaced)
-  fill(102, 181, 106);
+  curMountain[0] += redMountainShift;
+  curMountain[1] += greenMountainShift;
+  curMountain[2] += blueMountainShift;
+  fill(curMountain[0], curMountain[1], curMountain[2]);
+
   triangle(width * 0.15, height * 0.05, width * 0.05, height * 0.55, width * 0.25, height * 0.55);
   triangle(width * 0.35, height * 0.15, width * 0.25, height * 0.55, width * 0.45, height * 0.55);
-  fill(89, 168, 93);
   triangle(width * 0.55, height * 0.25, width * 0.45, height * 0.55, width * 0.65, height * 0.55);
-  fill(81, 157, 88);
   triangle(width * 0.75, height * 0.15, width * 0.65, height * 0.55, width * 0.85, height * 0.55);
   triangle(width * 0.95, height * 0.25, width * 0.85, height * 0.55, width * 1.05, height * 0.55);
 
+  noStroke();
+  fill(curWater[0], curWater[1], curWater[2]);
+  rect(0, height / 3, width, height - height / 3);
 
   // clouds (fixed position, tight clusters)
-  fill(255);
-  cloud(240, 80);
-  cloud(510, 60);
-  cloud(700, 100);
-  cloud(900, 75);
+
+  for (let i = 0; i < clouds.length; i++) {
+    clouds[i].x += random(0.1,0.5);
 
 
-  // water
-  noStroke();
-  fill(0, 20, 255);
-  rect(0, height / 3, width, height - height / 3);
+    
+    cloud(clouds[i].x, clouds[i].y);
+    if (clouds[i].x > width + 60) {
+      clouds[i].x = -60;
+      clouds[i].y = random(0, height / 6 - 40);
+    }
+
+
+
+
+  }
+
 }
 
 
 function cloud(x, y) {
+  fill(curCloud[0], curCloud[1], curCloud[2]);
   circle(x, y, 40);
   circle(x + 25, y - 5, 42);
   circle(x + 50, y, 40);
