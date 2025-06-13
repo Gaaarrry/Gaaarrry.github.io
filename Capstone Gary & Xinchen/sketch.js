@@ -4,7 +4,7 @@
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
-
+let inwater = false
 let rectWidth = 10;
 let currentScene = 6;
 let clouds = [];
@@ -56,12 +56,32 @@ let blueWaterShift = (waterTargets[1][2] - waterTargets[0][2]) / colorDelay;
 let redCloudShift = (cloudTargets[1][0] - cloudTargets[0][0]) / colorDelay;
 let greenCloudShift = (cloudTargets[1][1] - cloudTargets[0][1]) / colorDelay;
 let blueCloudShift = (cloudTargets[1][2] - cloudTargets[0][2]) / colorDelay;
+
+let ballx;
+let bally;
+let fishWirex,fishWirey,fishWirevx,fishWirevy;
+let isFired = false;
+const fishWireLength = 300;
+const gravity = {x: 0, y: 0.1};
+let myshop;
+let vis = 0;
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   clouds = [{ x: 100, y: random(height / 10, height / 3 - 40) },
   { x: 500, y: random(height / 10, height / 3 - 40) },
   { x: 830, y: random(height / 10, height / 3 - 40) },
   { x: 1100, y: random(height / 10, height / 3 - 40) }]
+  
+  
+  ballx = width/2;
+  bally = height/2-170;
+  
+  fishWirex = ballx;
+  fishWirey = bally;
+  fishWirevx = 0;
+  fishWirevy =0;
+  myshop = new shop(width / 2, height / 2);
 }
 
 
@@ -69,7 +89,88 @@ function draw() {
   drawBackground();
   generateTerrain();
 
+  //gravity and shop
+  myshop.display();
 
+
+  if (keyIsDown(65)) ballx -= 3;
+  if (keyIsDown(68)) ballx += 3;
+
+
+  fill(100, 150, 255);
+  noStroke();
+  circle(ballx,bally, 30);
+
+
+  if (isFired) {
+    fishWirevx += gravity.x;
+    fishWirevy += gravity.y;
+    fishWirex += fishWirevx;
+    fishWirey += fishWirevy;
+
+
+    let dx = fishWirex - ballx;
+    let dy = fishWirey - bally;
+    let dist = sqrt(dx*dx + dy*dy);
+
+
+    if (dist > fishWireLength) {
+      let angle = atan2(dy, dx);
+      fishWirex = ballx + cos(angle) * fishWireLength;
+      fishWirey = bally + sin(angle) * fishWireLength;
+
+
+      let velAlongLine = fishWirevx * cos(angle) + fishWirevy * sin(angle);
+      fishWirevx -= velAlongLine * cos(angle);
+      fishWirevy -= velAlongLine * sin(angle);
+    }
+
+
+    stroke(0);
+    strokeWeight(2);
+    line(ballx, bally, fishWirex, fishWirey);
+
+
+    fill(255, 100, 100);
+    noStroke();
+    circle(fishWirex, fishWirey, 20);
+
+    if (fishWirey > height/3){//determine whether hook in the water
+      inwater = true;
+    }
+    else{
+      inwater = false;
+    }
+  }
+  if(inwater){
+    fishWirevx *=0.98
+    fishWirevy *=0.98
+    fishWirevy -= 0.02;
+
+  }
+}
+
+function keyPressed(){
+  //hook and shop display
+  if (key === ' ') {
+    if (!isFired) {
+      isFired = true;
+      let dirX = mouseX - ballx;
+      let dirY = mouseY - bally;
+      let mag = sqrt(dirX * dirX + dirY * dirY);
+      if (mag != 0) {
+        dirX /= mag;
+        dirY /= mag;
+      }
+      fishWirex = ballx + dirX * fishWireLength;
+      fishWirey = bally + dirY * fishWireLength;
+      fishWirevx = dirX * 10;
+      fishWirevy = dirY * 10;
+    }
+  }
+  if (key === 'p') {
+    vis = vis === 0 ? 1 : 0;
+  }
 
 }
 function drawBackground() {
@@ -209,6 +310,20 @@ function generateTerrain() {
     }
   }
 }
+
+class shop {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.s = 1000;
+  }
+  display() {
+    if (vis === 1) {
+      square(this.x, this.y, this.s);
+    }
+  }
+}
+
 
 
 
