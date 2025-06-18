@@ -3,57 +3,71 @@
 //
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
-let inwater = false
-let rectWidth = 10;
-let currentScene = 6;
-let clouds = [];
-let scene = 60;
-let backgroundColor = [[0, 0, 40], [60, 100, 150], [135, 206, 250], [255, 165, 0], [255, 100, 50], [20, 20, 30]];
-let mountainTargets = [
-  [20, 30, 30],    // 深夜：深灰绿
-  [60, 90, 80],    // 清晨：暗绿色
-  [90, 150, 120],  // 上午：中绿
-  [120, 180, 140], // 中午：亮绿
-  [100, 130, 120], // 傍晚：暗一点
-  [15, 20, 20]     // 午夜：极暗
+let inwater = false// whether hook id in the water or not
+let rectWidth = 10;// width of each rectangle in the terrain
+let currentScene = 6;// hwo many scenes
+let clouds = [];// cloud array
+// scene 0: night, 1: morning, 2: noon, 3: afternoon, 4: evening, 5: sunset 6: night again
+let particles = [];// particles for the fish explosion effect
+let scene = 60; // how many frames for each scene,60 is like change slowly
+let backgroundColor = [[0, 0, 40], [60, 100, 150], [135, 206, 250], [255, 165, 0], [255, 100, 50], [20, 20, 30]];// background color for each scene for shifting color
+
+let mountainTargets = [// mountain color targets
+  [20, 30, 30],// night
+  [60, 90, 80], // morning
+  [90, 150, 120], // noon
+  [120, 180, 140],    // afternoon  
+  [100, 130, 120],  // evening
+  [15, 20, 20]  // sunset
 ];
 
 
 
 
-let waterTargets = [
-  [0, 20, 40],     // 深夜：蓝黑
-  [30, 80, 130],   // 清晨：冷蓝
-  [50, 150, 200],  // 上午：清澈蓝
-  [70, 180, 255],  // 中午：亮蓝
-  [50, 130, 180],  // 傍晚：带一点橘光
-  [0, 15, 30]      // 午夜：深蓝
+let waterTargets = [// water color targets
+  [0, 20, 40],
+  [30, 80, 130],
+  [50, 150, 200],
+  [70, 180, 255],
+  [50, 130, 180],
+  [0, 15, 30]
 ];
 
 
 
 
-let cloudTargets = [
-  [80, 80, 100],   // 深夜：暗灰蓝
-  [180, 180, 220], // 清晨：淡灰白
-  [255, 255, 255], // 上午：纯白
-  [255, 240, 200], // 中午：日光偏橘
-  [220, 200, 200], // 傍晚：微红云
-  [100, 100, 120]  // 午夜：低亮灰
+let cloudTargets = [// cloud color targets
+  [80, 80, 100],
+  [180, 180, 220],
+  [255, 255, 255],
+  [255, 240, 200],
+  [220, 200, 200],
+  [100, 100, 120]
 ];
 
-
+// Initialize current colors
 let curBg = backgroundColor[0];
 let curMountain = mountainTargets[0];
 let curWater = waterTargets[0];
 let curCloud = cloudTargets[0];
-let colorDelay = 600;
+
+let colorDelay = 600;// how many frames to change color
+let boatCost = 200;// boat upgrade cost
+let hookCost = 100;// hook upgrade cost
+let lineCost = 150;// line length upgrade cost
+
+// Calculate color shifts for smooth transitions
 let redShift = (backgroundColor[1][0] - backgroundColor[0][0]) / colorDelay;
 let greenShift = (backgroundColor[1][1] - backgroundColor[0][1]) / colorDelay;
 let blueShift = (backgroundColor[1][2] - backgroundColor[0][2]) / colorDelay;
+
+// Mountain color shifts
 let redMountainShift = (mountainTargets[1][0] - mountainTargets[0][0]) / colorDelay;
 let greenMountainShift = (mountainTargets[1][1] - mountainTargets[0][1]) / colorDelay;
 let blueMountainShift = (mountainTargets[1][2] - mountainTargets[0][2]) / colorDelay;
+
+
+// Water color shifts
 let redWaterShift = (waterTargets[1][0] - waterTargets[0][0]) / colorDelay;
 let greenWaterShift = (waterTargets[1][1] - waterTargets[0][1]) / colorDelay;
 let blueWaterShift = (waterTargets[1][2] - waterTargets[0][2]) / colorDelay;
@@ -61,30 +75,26 @@ let redCloudShift = (cloudTargets[1][0] - cloudTargets[0][0]) / colorDelay;
 let greenCloudShift = (cloudTargets[1][1] - cloudTargets[0][1]) / colorDelay;
 let blueCloudShift = (cloudTargets[1][2] - cloudTargets[0][2]) / colorDelay;
 
-
+//the variables for the hook,position and other stuff about the hook
 let ballx;
 let bally;
-let fishWirex,fishWirey,fishWirevx,fishWirevy;
-let isFired = false;
-let fishWireLength = 300;
-const gravity = {x: 0, y: 0.1};
-let myshop;
+let fishWirex, fishWirey, fishWirevx, fishWirevy;
+
+let isFired = false;// whether the hook is fired or not
+let baseWireLength = 200;
+let fishWireLength = baseWireLength;
+
+const gravity = { x: 0, y: 0.1 };// gravity for the hook
+let myshop; 
 let myBoat;
 let vis = 0;
-let boatlv =5 ;//boat upgrade
-//make group of fish
+let boatlv = 1;
 let fishes = [];
 let smallLayer, mediumLayer, bigLayer;
-
-
-//hook the fish
-let hookedFishes = [];  // stored the fishes that been hooked.
-let maxhooked = 3;
-
-
-//money system
+let hookedFishes = [];
+let maxhooked = 1;
 let money = 0;
-
+let imgBoat, imgHook, imgRuler;
 
 
 
@@ -92,75 +102,68 @@ let money = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+
+  //the clouds will appear randomly in the top of the screen on y-axis
   clouds = [{ x: 100, y: random(height / 10, height / 3 - 40) },
   { x: 500, y: random(height / 10, height / 3 - 40) },
   { x: 830, y: random(height / 10, height / 3 - 40) },
   { x: 1100, y: random(height / 10, height / 3 - 40) }]
- 
- 
-  ballx = width/2;
-  bally = height/2-220;
- 
+
+
+  ballx = width / 2;
+  bally = height / 2 - 220;
+
   fishWirex = ballx;
   fishWirey = bally;
   fishWirevx = 0;
-  fishWirevy =0;
+  fishWirevy = 0;
+
+  
   myshop = new shop(100, 0);
- 
-  myBoat = new boat(ballx, bally,boatlv);
+
+  myBoat = new boat(ballx, bally, boatlv);
 
 
-  //draw fish
-  //area of water
-  smallLayer = [height * 0.4, height * 0.5];
-  mediumLayer = [height * 0.6, height * 0.7];
-  bigLayer = [height * 0.8, height * 0.9];
+// generate fishes small medium and big
+  smallLayer = [height/3, height];
+  mediumLayer = [height * 1/2, height];
+  bigLayer = [height * 2/3, height];
 
 
- 
-  for (let i = 0; i < 15; i++) {
-    let type = int(random(0, 3)); // 0 = small, 1 = medium, 2 = big
+//
+  for (let i = 0; i < 20; i++) {
+    let type = int(random(0, 3));
     let x = random(width);
     let y;
     if (type === 0) y = random(smallLayer[0], smallLayer[1]);
     else if (type === 1) y = random(mediumLayer[0], mediumLayer[1]);
     else y = random(bigLayer[0], bigLayer[1]);
-
-
-    fishes.push(new Fish(type, x, y, int(random(0,2)))); // 1 = facing right
+    fishes.push(new Fish(type, x, y, int(random(0, 2))));
   }
 }
 
+
+
+function preload() {
+  imgBoat = loadImage("assets/boat.jpg");
+  imgHook = loadImage("assets/hook.jpg");
+  imgRuler = loadImage("assets/length.jpg");
+}
 
 
 
 function draw() {
   drawBackground();
   generateTerrain();
-
-
-  //gravity and shop
   myshop.display();
-
-
-
-
-  if (keyIsDown(65)){
+  if (keyIsDown(65)) {
     ballx -= 3;
     myBoat.move(-3)
-
-
   }
-  if (keyIsDown(68)){
+  if (keyIsDown(68)) {
     myBoat.move(3);
     ballx += 3;
-
-
   }
-
-
-
-
   myBoat.display();
 
 
@@ -171,21 +174,15 @@ function draw() {
     fishWirey += fishWirevy;
 
 
-
-
     let dx = fishWirex - ballx;
     let dy = fishWirey - bally;
-    let dist = sqrt(dx*dx + dy*dy);
-
-
+    let dist = sqrt(dx * dx + dy * dy);
 
 
     if (dist > fishWireLength) {
       let angle = atan2(dy, dx);
       fishWirex = ballx + cos(angle) * fishWireLength;
       fishWirey = bally + sin(angle) * fishWireLength;
-
-
 
 
       let velAlongLine = fishWirevx * cos(angle) + fishWirevy * sin(angle);
@@ -195,36 +192,31 @@ function draw() {
 
 
 
-
     stroke(0);
     strokeWeight(2);
     line(ballx, bally, fishWirex, fishWirey);
-
-
-
-
     fill(255, 100, 100);
     noStroke();
     circle(fishWirex, fishWirey, 20);
 
 
-    if (fishWirey > height/3){//determine whether hook in the water
+    if (fishWirey > height / 3) {//determine whether hook in the water
       inwater = true;
     }
-    else{
+    else {
       inwater = false;
     }
   }
-  if(inwater){
-    fishWirevx *=0.98
-    fishWirevy *=0.98
+  if (inwater) {
+    fishWirevx *= 0.98
+    fishWirevy *= 0.98
     fishWirevy -= 0.02;
 
 
   }
 
 
- 
+
 
 
   //draw fish
@@ -239,99 +231,173 @@ function draw() {
   //control fish wire
   if (keyIsDown(82)) {
     if (fishWireLength > 0) {
-      fishWireLength--;    
+      fishWireLength--;
     }
   }
 
 
-  if (fishWireLength === 0){
+  if (fishWireLength <= 0) {
     isFired = false;
-    fishWireLength = 300;
+    fishWireLength = baseWireLength;
   }
+
 
 
   //hook fish
 
 
-  for(let fish of fishes){
-  if(!fish.hooked){
-    let d = dist(fish.x, fish.y, fishWirex, fishWirey);
-    if (d < fish.size / 2 + 10){
-      if(hookedFishes.length < maxhooked){  // hookedFishes是数组，maxhooked是最大挂钩数量
-        fish.hooked = true;
-        hookedFishes.push(fish);
+  for (let fish of fishes) {
+    if (!fish.hooked) {
+      let d = dist(fish.x, fish.y, fishWirex, fishWirey);
+      if (d < fish.size / 2 + 10) {
+        if (hookedFishes.length < maxhooked) {  // hookedFishes是数组，maxhooked是最大挂钩数量
+          fish.hooked = true;
+          hookedFishes.push(fish);
+        }
       }
     }
   }
-}
 
 
 
 
-  for(let fish of hookedFishes){
+  for (let fish of hookedFishes) {
     fish.x = fishWirex;
-    fish.y =fishWirey;
+    fish.y = fishWirey;
   }
 
 
-  // 检查钓到的鱼是否被拉出水面，并奖励金币
-for (let i = hookedFishes.length - 1; i >= 0; i--) {
-  let fish = hookedFishes[i];
-  if (fishWirey < height / 3) {  // 鱼被拉回到水面以上
-    // 奖励金币
-    if (fish.type === 0) {
-      money += 50;
-    } else if (fish.type === 1) {
-      money += 150;
-    } else if (fish.type === 2) {
-      money += 800;
+
+  for (let i = hookedFishes.length - 1; i >= 0; i--) {
+    let fish = hookedFishes[i];
+    if (fishWirey < height / 3) {  
+
+      if (fish.type === 0) {
+        money += 50;
+      } else if (fish.type === 1) {
+        money += 150;
+      } else if (fish.type === 2) {
+        money += 800;
+      }
+
+
+      hookedFishes.splice(i, 1);
+      let index = fishes.indexOf(fish);
+      if (index !== -1) {
+        fishes.splice(index, 1);
+      }
+      for (let j = 0; j < 100; j++) {
+        let angle = random(TWO_PI);
+        let speed = random(2, 5);
+        particles.push({
+          x: fish.x,
+          y: fish.y,
+          vx: cos(angle) * speed,
+          vy: sin(angle) * speed,
+          r: random(3, 6),
+          life: 100  
+        });
+      }
+
+
+      fish.hooked = false;
+      fish.x = random(width);
+
+      if (fish.type === 0) {
+        fish.y = random(smallLayer[0], smallLayer[1]);
+      } else if (fish.type === 1) {
+        fish.y = random(mediumLayer[0], mediumLayer[1]);
+      } else {
+        fish.y = random(bigLayer[0], bigLayer[1]);
+      }
+
+      fishes.push(fish);
     }
-
-
-    // 删除该鱼
-    hookedFishes.splice(i, 1);
-    let index = fishes.indexOf(fish);
-    if (index !== -1) {
-      fishes.splice(index,1);
-    }
-    
-    fish.hooked = false;
-    fish.x = random(width);
-
-    if (fish.type === 0) {
-      fish.y = random(smallLayer[0], smallLayer[1]);
-    } else if (fish.type === 1) {
-      fish.y = random(mediumLayer[0], mediumLayer[1]);
-    } else {
-      fish.y = random(bigLayer[0], bigLayer[1]);
-    }
-
-    fishes.push(fish);
   }
+
+
+  fill(255);
+  textSize(24);
+  textAlign(LEFT, TOP);
+  text("💰Money: $" + money, 10, 10);
+  for (let p of particles) {
+    noStroke();
+    fill(100, 180, 255);  
+    circle(p.x, p.y, p.r);
+
+
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.2;
+    p.life--;
+  }
+
+
+  let newParticles = [];
+  for (let p of particles) {
+    if (p.life > 0) {
+      newParticles.push(p);
+    }
+  }
+  particles = newParticles;
+
+
+
+  let coinCap = 400 * myBoat.level;  
+  if (money > coinCap) {
+    money = coinCap;
+    alert("Upgrade your boat to save more money!");
+  }
+
+
+
+
+
+
+
+
+
 }
 
+function mousePressed() {
+  if (vis === 1) {
+    if (mouseX > myshop.x && mouseX < myshop.x + 160 && mouseY > myshop.y && mouseY < myshop.y + 260) {
 
-fill(255);
-textSize(24);
-textAlign(LEFT, TOP);
-text("💰Money: $" + money, 10, 10);
+      if (mouseY > myshop.y + 20 && mouseY < myshop.y + 70) { 
+        if (money >= boatCost) {
+          money -= boatCost;
+          myBoat.level++;
+          boatCost = int(boatCost * 1.5); 
+        } else {
+          alert("Not enough money for boat upgrade!");
+        }
 
+      } else if (mouseY > myshop.y + 100 && mouseY < myshop.y + 150) {
+        if (money >= hookCost) {
+          money -= hookCost;
+          maxhooked++;
+          hookCost = int(hookCost * 1.7);  
+        } else {
+          alert("Not enough money for hook upgrade!");
+        }
 
+      } else if (mouseY > myshop.y + 180 && mouseY < myshop.y + 230) { 
+        if (money >= lineCost) {
+          money -= lineCost;
+          baseWireLength += 50;
+          fishWireLength = baseWireLength;
+          lineCost = int(lineCost * 1.5);  
+        } else {
+          alert("Not enough money for line length upgrade!");
+        }
+      }
+    }
+  }
 
-
- 
- 
-
-
- 
-
-
- 
 }
 
+function keyPressed() {
 
-function keyPressed(){
-  //hook and shop display
   if (key === ' ') {
     if (!isFired) {
       isFired = true;
@@ -353,30 +419,10 @@ function keyPressed(){
   }
 
 
- 
+
 }
 function drawBackground() {
-  // currentScene = floor(frameCount / scene) % 6;
 
-
-  // if (currentScene === 0) {
-  //   background(0, 0, 40);
-  // }
-  // else if (currentScene === 1) {
-  //   background(60, 100, 150);
-  // }
-  // else if (currentScene === 2) {
-  //   background(135, 206, 250);
-  // }
-  // else if (currentScene === 3) {
-  //   background(255, 165, 0);
-  // }
-  // else if (currentScene === 4) {
-  //   background(255, 100, 50);
-  // }
-  // else if (currentScene === 5) {
-  //   background(20, 20, 30);
-  // }
   if (frameCount % colorDelay === 0) {
     currentScene++;
     if (currentScene > 5) {
@@ -415,7 +461,7 @@ function drawBackground() {
 
 
 
-  // sun (responsive)
+
   noStroke();
   fill(255, 255, 0);
   circle(width * 0.85, height * 0.1, width * 0.05);
@@ -423,7 +469,7 @@ function drawBackground() {
 
 
 
-  // mountains (3–5, responsive and evenly spaced)
+
   curMountain[0] += redMountainShift;
   curMountain[1] += greenMountainShift;
   curMountain[2] += blueMountainShift;
@@ -442,12 +488,12 @@ function drawBackground() {
   rect(0, height / 3, width, height - height / 3);
 
 
-  // clouds (fixed position, tight clusters)
+
 
 
   for (let i = 0; i < clouds.length; i++) {
-    clouds[i].x += random(0.1,0.5);
-   
+    clouds[i].x += random(0.1, 0.5);
+
     cloud(clouds[i].x, clouds[i].y);
     if (clouds[i].x > width + 60) {
       clouds[i].x = -60;
@@ -478,7 +524,7 @@ function generateTerrain() {
   let allHeight = 0;
   let allRect = 0;
   for (let x = 0; x <= width; x += rectWidth) {
-    let y = height / 3 + noise(peak) * (height / 50); // limit wave range within lake
+    let y = height / 3 + noise(peak) * (height / 50); 
     peak += 0.01;
     noStroke();
     fill(0, 120, 200, 160);
@@ -505,11 +551,17 @@ class shop {
   }
   display() {
     if (vis === 1) {
-     
-      fill(225,225,225,70)
-      square(this.x, this.y, this.s);
-
-
+      fill(225, 225, 225, 200);
+      rect(this.x, this.y, 160, 260, 10);
+      image(imgBoat, this.x + 30, this.y + 20, 100, 50);
+      image(imgHook, this.x + 30, this.y + 100, 100, 50);
+      image(imgRuler, this.x + 30, this.y + 180, 100, 50);
+      fill(0);
+      textSize(14);
+      textAlign(CENTER, CENTER);
+      text("Boat ($" + boatCost + ")", this.x + 80, this.y + 10);
+      text("Fish On Hook ($" + hookCost + ")", this.x + 80, this.y + 90);
+      text("Line Length ($" + lineCost + ")", this.x + 80, this.y + 170);
     }
   }
 }
@@ -585,9 +637,9 @@ class boat {
       } else {
         // inverted
         triangle(
-          mastX, mastTopY,            
-          mastX + 20, mastTopY + 40,  
-          mastX, mastTopY + 40        
+          mastX, mastTopY,
+          mastX + 20, mastTopY + 40,
+          mastX, mastTopY + 40
         );
       }
     }
@@ -665,12 +717,12 @@ class Fish {
         if (this.x < 0) this.x = width;
       }
     }
-   
-   
+
+
   }
 
 
 
 
- 
+
 }
