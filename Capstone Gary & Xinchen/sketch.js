@@ -79,13 +79,15 @@ let blueCloudShift = (cloudTargets[1][2] - cloudTargets[0][2]) / colorDelay;
 let ballx;
 let bally;
 let fishWirex, fishWirey, fishWirevx, fishWirevy;
-
+let gamestate = 0;
 let isFired = false;// whether the hook is fired or not
-let baseWireLength = 200;
+let baseWireLength = 250;
 let fishWireLength = baseWireLength;
+let flashAlpha = 0;
+let starting = false;
 
 const gravity = { x: 0, y: 0.1 };// gravity for the hook
-let myshop; 
+let myshop;
 let myBoat;
 let vis = 0;
 let boatlv = 1;
@@ -95,6 +97,12 @@ let hookedFishes = [];
 let maxhooked = 1;
 let money = 0;
 let imgBoat, imgHook, imgRuler;
+let startFrame = 0;
+let endFrame = 0;
+let gameFinished = false;
+let coinParticles = [];
+let showVictory = false;
+
 
 
 
@@ -102,7 +110,21 @@ let imgBoat, imgHook, imgRuler;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  gamebodysetup();
 
+
+}
+
+
+// Preload images for the shop
+function preload() {
+  imgBoat = loadImage("assets/boat.jpg");
+  imgHook = loadImage("assets/hook.jpg");
+  imgRuler = loadImage("assets/length.jpg");
+
+}
+
+function gamebodysetup() {
   //the clouds will appear randomly in the top of the screen on y-axis
   clouds = [{ x: 100, y: random(height / 10, height / 3 - 40) },
   { x: 500, y: random(height / 10, height / 3 - 40) },
@@ -118,19 +140,19 @@ function setup() {
   fishWirevx = 0;
   fishWirevy = 0;
 
-  
+
   myshop = new shop(100, 0);
 
   myBoat = new boat(ballx, bally, boatlv);
 
 
-// generate fishes small medium and big
-  smallLayer = [height/3, height];
-  mediumLayer = [height * 1/2, height];
-  bigLayer = [height * 2/3, height];
+  // generate fishes small medium and big
+  smallLayer = [(height / 3) + 20, height * 4 / 7];
+  mediumLayer = [height * 1 / 2, height];
+  bigLayer = [height * 2 / 3, height];
 
 
-//
+  //20 fishes will be in the water
   for (let i = 0; i < 20; i++) {
     let type = int(random(0, 3));
     let x = random(width);
@@ -142,50 +164,59 @@ function setup() {
   }
 }
 
+function draw() {
+  if (gamestate === 0) {
+    drawcover();
+  } else {
+    gamebodydraw();
+  }
 
-
-function preload() {
-  imgBoat = loadImage("assets/boat.jpg");
-  imgHook = loadImage("assets/hook.jpg");
-  imgRuler = loadImage("assets/length.jpg");
 }
 
-
-
-function draw() {
+function gamebodydraw() {
   drawBackground();
   generateTerrain();
   myshop.display();
-  if (keyIsDown(65)) {
+  if (keyIsDown(65)) {// A key for left
     ballx -= 3;
     myBoat.move(-3)
   }
-  if (keyIsDown(68)) {
+  if (keyIsDown(68)) {// D key for right
     myBoat.move(3);
     ballx += 3;
   }
   myBoat.display();
 
 
-  if (isFired) {
-    fishWirevx += gravity.x;
-    fishWirevy += gravity.y;
-    fishWirex += fishWirevx;
-    fishWirey += fishWirevy;
+  // draw hook
+    if (isFired) {
+    // simulate hook drop by gravity
+    fishWirevx += gravity.x;//apply gravity to the hook’s velocity
+    fishWirevy += gravity.y;//
+    fishWirex += fishWirevx;//update position by add velocity
+    fishWirey += fishWirevy;//
 
 
-    let dx = fishWirex - ballx;
-    let dy = fishWirey - bally;
-    let dist = sqrt(dx * dx + dy * dy);
 
 
+    let dx = fishWirex - ballx; //distance hook to boat(ballx = boat’x)
+    let dy = fishWirey - bally; //distance hook to boat(bally = boat’y)
+    let dist = sqrt(dx * dx + dy * dy);//calculate fish wire’s distance(pythagorean theorem)a2+b2 =c2
+
+
+    // If the hook is too far from the ball, it will be pulled back
     if (dist > fishWireLength) {
-      let angle = atan2(dy, dx);
+      let angle = atan2(dy, dx);//arctangent calculate the angle from the boat to the hook(radians not angle)
+	//boat is the circle center, fishwirelength is the radius of this circle. Use trigonometry to calculate the position of the hook.
       fishWirex = ballx + cos(angle) * fishWireLength;
       fishWirey = bally + sin(angle) * fishWireLength;
 
 
+      // Calculate the velocity along the line and adjust the velocity
       let velAlongLine = fishWirevx * cos(angle) + fishWirevy * sin(angle);
+
+
+	// Subtract the velocity along the wire direction to simulate tension
       fishWirevx -= velAlongLine * cos(angle);
       fishWirevy -= velAlongLine * sin(angle);
     }
@@ -199,7 +230,7 @@ function draw() {
     noStroke();
     circle(fishWirex, fishWirey, 20);
 
-
+    // Check if the hook is in the water and it will slow down because of the water resistance!!!
     if (fishWirey > height / 3) {//determine whether hook in the water
       inwater = true;
     }
@@ -246,7 +277,7 @@ function draw() {
   //hook fish
 
 
-  for (let fish of fishes) {
+  for (let fish of fishes) {// check if the fish is hooked
     if (!fish.hooked) {
       let d = dist(fish.x, fish.y, fishWirex, fishWirey);
       if (d < fish.size / 2 + 10) {
@@ -267,10 +298,10 @@ function draw() {
   }
 
 
-
+  // draw hooked fishes, and check if they are close to the boat
   for (let i = hookedFishes.length - 1; i >= 0; i--) {
     let fish = hookedFishes[i];
-    if (fishWirey < height / 3) {  
+    if (fishWirey < height / 3) {
 
       if (fish.type === 0) {
         money += 50;
@@ -280,12 +311,31 @@ function draw() {
         money += 800;
       }
 
-
+      //right here is when the fish is caught, the fish will be removed from the hookedFishes array and the fishes array
       hookedFishes.splice(i, 1);
       let index = fishes.indexOf(fish);
       if (index !== -1) {
         fishes.splice(index, 1);
       }
+      if (fishes.length === 0 && !gameFinished) {
+        gameFinished = true;
+        endFrame = frameCount;
+
+        for (let i = 0; i < 200; i++) {
+          let angle = random(TWO_PI);
+          let speed = random(2, 6);
+          coinParticles.push({
+            x: width / 2,
+            y: height / 2,
+            vx: cos(angle) * speed,
+            vy: sin(angle) * speed,
+            r: random(5, 8),
+            life: 100,
+            color: color(255, 215, 0)
+          });
+        }
+      }
+
       for (let j = 0; j < 100; j++) {
         let angle = random(TWO_PI);
         let speed = random(2, 5);
@@ -295,23 +345,10 @@ function draw() {
           vx: cos(angle) * speed,
           vy: sin(angle) * speed,
           r: random(3, 6),
-          life: 100  
+          life: 100
         });
       }
 
-
-      fish.hooked = false;
-      fish.x = random(width);
-
-      if (fish.type === 0) {
-        fish.y = random(smallLayer[0], smallLayer[1]);
-      } else if (fish.type === 1) {
-        fish.y = random(mediumLayer[0], mediumLayer[1]);
-      } else {
-        fish.y = random(bigLayer[0], bigLayer[1]);
-      }
-
-      fishes.push(fish);
     }
   }
 
@@ -320,12 +357,12 @@ function draw() {
   textSize(24);
   textAlign(LEFT, TOP);
   text("💰Money: $" + money, 10, 10);
+
+  //use for loops to draw the particles and update their position
   for (let p of particles) {
     noStroke();
-    fill(100, 180, 255);  
+    fill(100, 180, 255);
     circle(p.x, p.y, p.r);
-
-
     p.x += p.vx;
     p.y += p.vy;
     p.vy += 0.2;
@@ -333,28 +370,56 @@ function draw() {
   }
 
 
-  let newParticles = [];
+  let newParticles = [];//create a new array to store particles that are still alive
+
+  // filter out particles that are still alive
   for (let p of particles) {
     if (p.life > 0) {
       newParticles.push(p);
     }
   }
-  particles = newParticles;
+  particles = newParticles;//so that the particles array only contains alive particles
+  for (let p of coinParticles) {
+    fill(p.color);
+    noStroke();
+    circle(p.x, p.y, p.r);
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.1;
+    p.life--;
+  }
+  coinParticles = coinParticles.filter(p => p.life > 0);
 
 
 
-  let coinCap = 400 * myBoat.level;  
+  let coinCap = 400 * myBoat.level;
   if (money > coinCap) {
     money = coinCap;
     alert("Upgrade your boat to save more money!");
   }
+  if (starting) {
+    noStroke();
+    fill(255, flashAlpha);
+    rect(0, 0, width, height);
+    flashAlpha -= 5;
+    if (flashAlpha <= 0) {
+      starting = false;
+    }
 
-
-
-
-
-
-
+  }
+  if (fishes.length === 0 && gameFinished === false) {
+    endFrame = frameCount;
+    gameFinished = true;
+  }
+  if (gameFinished === true) {
+    let timeUsed = (endFrame - startFrame) / 60;
+    timeUsed = int(timeUsed * 10) / 10;  // 保留一位小数
+    fill(255);
+    textSize(32);
+    textAlign(CENTER, CENTER);
+    text("You caught all the fish!", width / 2, height * 0.4);
+    text("Time used: " + timeUsed + " seconds! Press i to restart", width / 2, height * 0.45);
+  }
 
 
 }
@@ -363,61 +428,97 @@ function mousePressed() {
   if (vis === 1) {
     if (mouseX > myshop.x && mouseX < myshop.x + 160 && mouseY > myshop.y && mouseY < myshop.y + 260) {
 
-      if (mouseY > myshop.y + 20 && mouseY < myshop.y + 70) { 
-        if (money >= boatCost) {
-          money -= boatCost;
-          myBoat.level++;
-          boatCost = int(boatCost * 1.5); 
+      if (mouseY > myshop.y + 20 && mouseY < myshop.y + 70) { //for boat upgrade
+        if (money >= boatCost) {// check if enough money for boat upgrade
+          money -= boatCost;// deduct money
+          myBoat.level++;// increase boat level
+          boatCost = int(boatCost * 1.5);//the boat's cost will increase by 50% each time 
         } else {
-          alert("Not enough money for boat upgrade!");
+          alert("Not enough money for boat upgrade!");// alert block if not enough money
         }
 
-      } else if (mouseY > myshop.y + 100 && mouseY < myshop.y + 150) {
+      } else if (mouseY > myshop.y + 100 && mouseY < myshop.y + 150) {// for hook upgrade
         if (money >= hookCost) {
           money -= hookCost;
           maxhooked++;
-          hookCost = int(hookCost * 1.7);  
+          hookCost = int(hookCost * 1.7);
         } else {
           alert("Not enough money for hook upgrade!");
         }
 
-      } else if (mouseY > myshop.y + 180 && mouseY < myshop.y + 230) { 
+      } else if (mouseY > myshop.y + 180 && mouseY < myshop.y + 230) { // for line length upgrade
         if (money >= lineCost) {
           money -= lineCost;
-          baseWireLength += 50;
+          baseWireLength += 85;
           fishWireLength = baseWireLength;
-          lineCost = int(lineCost * 1.5);  
+          lineCost = int(lineCost * 1.5);
         } else {
           alert("Not enough money for line length upgrade!");
         }
       }
     }
   }
-
 }
 
 function keyPressed() {
+  if (gamestate === 0) {
+    gamestate = 1;
+    starting = true;
+    flashAlpha = 255;
+    startFrame = frameCount;
+    gameFinished = false;
+  }
 
-  if (key === ' ') {
+
+  if (key === ' ') {// space key to fire the hook
     if (!isFired) {
       isFired = true;
+
+
+	// Calculate the horizontal and vertical distances from the boat to the mouse position (direction vector)
       let dirX = mouseX - ballx;
       let dirY = mouseY - bally;
+	// Calculate the magnitude (length) of the direction vector
       let mag = sqrt(dirX * dirX + dirY * dirY);
+	//normalize(set length to 1 only keep vector)
+	//for example v(3,4) its length should be 3^2+4^2 =5 but we cannot use 5 to time 300(fishwirelength) to get the real value we want therefore we normalize it. v(⅗,⅘)=v(0.6,0.8) now the length is 1.
       if (mag != 0) {
         dirX /= mag;
         dirY /= mag;
       }
+	// Set the initial position of the hook at a distance fishWireLength away from the boat along the direction
       fishWirex = ballx + dirX * fishWireLength;
       fishWirey = bally + dirY * fishWireLength;
+	
+	// Set the initial velocity of the hook along the direction vector with a speed of 10
       fishWirevx = dirX * 10;
       fishWirevy = dirY * 10;
     }
   }
+
   if (key === 'p') {
-    vis = vis === 0 ? 1 : 0;
+    vis = vis === 0 ? 1 : 0; // 0 ? 1 : 0 means toggle visibility
   }
 
+  if (key === 'i' && gameFinished) {
+
+    fishes = [];
+    hookedFishes = [];
+    coinParticles = [];
+    particles = [];
+    money = 0;
+    boatlv = 1;
+    maxhooked = 1;
+    baseWireLength = 250;
+    fishWireLength = baseWireLength;
+    boatCost = 200;
+    hookCost = 100;
+    lineCost = 150;
+    gameFinished = false;
+    startFrame = frameCount;
+    myBoat = new boat(ballx, bally, boatlv);
+    gamebodysetup(); 
+  }
 
 
 }
@@ -428,21 +529,30 @@ function drawBackground() {
     if (currentScene > 5) {
       currentScene = 0;
     }
+    // Update color shifts for the next scene of the vackground
     redShift = (backgroundColor[currentScene][0] - curBg[0]) / colorDelay;
     greenShift = (backgroundColor[currentScene][1] - curBg[1]) / colorDelay;
     blueShift = (backgroundColor[currentScene][2] - curBg[2]) / colorDelay;
+
+    // Update color shifts for the mountains
     redMountainShift = (mountainTargets[currentScene][0] - curMountain[0]) / colorDelay;
     greenMountainShift = (mountainTargets[currentScene][1] - curMountain[1]) / colorDelay;
     blueMountainShift = (mountainTargets[currentScene][2] - curMountain[2]) / colorDelay;
+
+
+    // Update color shifts for the water and clouds
     redWaterShift = (waterTargets[currentScene][0] - curWater[0]) / colorDelay;
     greenWaterShift = (waterTargets[currentScene][1] - curWater[1]) / colorDelay;
     blueWaterShift = (waterTargets[currentScene][2] - curWater[2]) / colorDelay;
+
     redCloudShift = (cloudTargets[currentScene][0] - curCloud[0]) / colorDelay;
     greenCloudShift = (cloudTargets[currentScene][1] - curCloud[1]) / colorDelay;
     blueCloudShift = (cloudTargets[currentScene][2] - curCloud[2]) / colorDelay;
 
 
   }
+
+  //when in current background array is [0],then it will + redShift same as greenShift and blueShift
   curBg[0] += redShift;
   curBg[1] += greenShift;
   curBg[2] += blueShift;
@@ -476,6 +586,8 @@ function drawBackground() {
   fill(curMountain[0], curMountain[1], curMountain[2]);
 
 
+
+  // Draw mountains, use * and / so that it can fit any screen size
   triangle(width * 0.15, height * 0.05, width * 0.05, height * 0.55, width * 0.25, height * 0.55);
   triangle(width * 0.35, height * 0.15, width * 0.25, height * 0.55, width * 0.45, height * 0.55);
   triangle(width * 0.55, height * 0.25, width * 0.45, height * 0.55, width * 0.65, height * 0.55);
@@ -490,7 +602,7 @@ function drawBackground() {
 
 
 
-
+  //draw clound randomly in the top of the screen
   for (let i = 0; i < clouds.length; i++) {
     clouds[i].x += random(0.1, 0.5);
 
@@ -507,7 +619,7 @@ function drawBackground() {
 }
 
 
-function cloud(x, y) {
+function cloud(x, y) {// draw cloud iuse circles
   fill(curCloud[0], curCloud[1], curCloud[2]);
   circle(x, y, 40);
   circle(x + 25, y - 5, 42);
@@ -517,14 +629,14 @@ function cloud(x, y) {
 }
 
 
-function generateTerrain() {
+function generateTerrain() {//same as the terrain but change the color and the height of the terrain,make it like a wave
   let peak = frameCount * 0.01;
   let peakY = height;
   let peakX;
   let allHeight = 0;
   let allRect = 0;
-  for (let x = 0; x <= width; x += rectWidth) {
-    let y = height / 3 + noise(peak) * (height / 50); 
+  for (let x = 0; x <= width; x += rectWidth) {// draw rectangles to make the terrain
+    let y = height / 3 + noise(peak) * (height / 50);
     peak += 0.01;
     noStroke();
     fill(0, 120, 200, 160);
@@ -543,13 +655,14 @@ function generateTerrain() {
 }
 
 
-class shop {
+class shop {// shop class for the shop
+  // constructor for the shop
   constructor(x, y) {
     this.x = x;
     this.y = y;
     this.s = 100;
   }
-  display() {
+  display() {//this can display the shop
     if (vis === 1) {
       fill(225, 225, 225, 200);
       rect(this.x, this.y, 160, 260, 10);
@@ -568,6 +681,7 @@ class shop {
 
 
 class boat {
+  //1. constructor(x, y, level) {
   constructor(x, y, level) {
     this.x = x;
     this.y = y;
@@ -576,7 +690,7 @@ class boat {
   }
 
 
-  display() {
+  display() {// display the boat
     push();
     translate(this.x, this.y);
 
@@ -649,7 +763,7 @@ class boat {
   }
 
 
-  move(dx) {
+  move(dx) {// move the boat
     this.x += dx;
     // change facing
     if (dx > 0) {
@@ -691,7 +805,7 @@ class Fish {
     push();
     translate(this.x, this.y);
 
-
+    // flip fish based on direction
     if (this.direction != 1) {
       scale(-1, 1);
     }
@@ -707,22 +821,35 @@ class Fish {
   }
 
 
-  move() {
+  move() {// move the fish
     if (!this.hooked) { // cant move if been hooked
-      if (this.direction === 1) {
+      if (this.direction === 1) {// move right
         this.x += this.speed;
         if (this.x > width) this.x = 0;
-      } else {
+      } else {// move left
         this.x -= this.speed;
         if (this.x < 0) this.x = width;
       }
     }
-
-
   }
+}
 
 
+function drawcover() {
+  drawBackground();
 
+  //use mouseX and mouseY to change the color of the text
+  //based on 05 class work on Github
+  let r = map(mouseX, 0, width, 0, 255);
+  let g = map(mouseX, 0, width, 255, 0);
+  let b = map(mouseY, 0, height, 100, 255);
+  fill(r, g, b);
 
+  textAlign(CENTER, CENTER);
+  textSize(200);
+  textFont("Comic Sans MS");
+  text("Fishing Life", width / 2, height * 0.4);
 
+  textSize(64);
+  text("Press any key to start", width / 2, height * 0.6);
 }
